@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>POTI-Assignment2</title>
+	<script src="jquery-3.2.1.min.js"></script>
+</head>
+<body>
+	<div id="products">
+		<button id="loadButton" type="button" onclick="loadProducts()">Load Products</button>
+	</div>
+	<script>
+		function loadProducts(){
+        $('#loadButton').hide();
+		$('#products').append('<ul></ul>');
+        $.ajax({
+            type: 'GET',
+            url: 'categories.xml',
+            dataType: 'xml',
+            success: function (data) {
+                console.log('Fetching categories...');
+                $(data).find('Categories').each(function () {
+                    if($(this).children().length)
+                    {
+                        var categoryID = $(this).find('CategoryID').text();
+                        var categoryName = $(this).find('CategoryName').text();
+                        var description = $(this).find('Description').text();
+
+                        var html = '<a href="#'+ categoryName +'" title="' + description + '">' + categoryName + '</a>';
+                        $('<li id="' + categoryID + '"></li>').html(html).appendTo('#products ul');
+                    }
+                });
+            },
+            error: function () {
+                console.log('An error occurred while processing Categories XML file.');
+                //alert('An error occurred while processing Categories XML file.');
+            }
+        }).done(function(){
+            console.log('... done.');
+            console.log('Fetching products...');
+            getProducts();
+        });
+
+        var getProducts = function(){
+            $.ajax({
+                type: 'GET',
+                url: 'products.xml',
+                dataType: 'xml',
+                success: function (data) {
+                    $(data).find('Products').each(function () {
+                        if($(this).children().length)
+                        {
+                            var productID = $(this).find('ProductID').text();
+                            var productName = $(this).find('ProductName').text();
+                            var categoryID = $(this).find('CategoryID').text();
+                            var qtyPerUnity = $(this).find('QuantityPerUnit').text();
+                            var unitPrice = $(this).find('UnitPrice').text();
+
+                            var html = '<a href="#Product='+ productID +'" title="' + productName + ',' + unitPrice + '">' + productName + '</a>';
+                            var categoryElement =  document.getElementById(categoryID);
+                            var subList = document.getElementById('Sub_' + categoryID );
+                            if(subList == null)
+                            {
+                                $('<ul id="Sub_' + categoryID + '"></ul>').appendTo(categoryElement);
+                                $('<li></li>').html(html).appendTo('#Sub_' + categoryID);
+                            }
+                            else
+                            {
+                                $('<li></li>').html(html).appendTo(subList);
+                            }
+                        }
+                    });
+                },
+                error: function () {
+                    console.log('An error occurred while processing Products XML file.');
+                    //alert('An error occurred while processing Products XML file.')
+                }
+            }).done(function(){
+                console.log('... done loading content tree.');
+            });
+        }
+		}
+
+		function saveProductsToArray(){
+			 
+		}
+	</script>
+</body>
+</html>
